@@ -28,52 +28,57 @@ var SoundSpriteExample = function() {
 SoundSpriteExample.__name__ = true;
 SoundSpriteExample.prototype = {
 	drawUI: function() {
-		var startButton = js.Browser.document.createElement("div");
-		startButton.style.backgroundColor = "blue";
-		startButton.innerHTML = "Start";
-		startButton.style.width = "100px";
-		startButton.style.height = "50px";
-		startButton.style.lineHeight = "50px";
-		startButton.style.color = "white";
-		startButton.style.textAlign = "center";
-		js.Browser.document.body.appendChild(startButton);
-		startButton.addEventListener("click",$bind(this,this.startButtonHandler),false);
 		this._redBall = js.Browser.document.createElement("div");
 		this._redBall.style.backgroundColor = "red";
 		this._redBall.style.width = "50px";
 		this._redBall.style.height = "50px";
 		this._redBall.style.lineHeight = "50px";
-		this._redBall.style.top = "200px";
+		this._redBall.style.top = js.Browser.window.innerHeight / 2 - 25 + "px";
 		this._redBall.style.left = "0px";
 		this._redBall.style.position = "absolute";
+		this._redBall.style.borderRadius = "50%";
 		js.Browser.document.body.appendChild(this._redBall);
 		this._redBall.style.webkitTransition = "all 1.0s ease";
 		this._redBall.style.MozTransition = "all 1.0s ease";
 		this._redBall.style.msTransition = "all 1.0s ease";
 		this._redBall.addEventListener("webkitTransitionEnd",$bind(this,this.animationEndHandler),false);
 		this._redBall.addEventListener("transitionend",$bind(this,this.animationEndHandler),false);
+		this._startButton = js.Browser.document.createElement("div");
+		this._startButton.style.backgroundColor = "#ccc";
+		this._startButton.innerHTML = "Start";
+		this._startButton.style.width = "100px";
+		this._startButton.style.height = "50px";
+		this._startButton.style.lineHeight = "50px";
+		this._startButton.style.color = "white";
+		this._startButton.style.textAlign = "center";
+		this._startButton.style.position = "absolute";
+		this._startButton.style.left = "0px";
+		this._startButton.style.top = "0px";
+		js.Browser.document.body.appendChild(this._startButton);
+		this._startButton.addEventListener("click",$bind(this,this.startButtonHandler),false);
 	}
 	,animationEndHandler: function(e) {
 		if(this._redBallBouncingFlag) {
 			this._redBall.style.left = js.Browser.window.innerWidth - 50 + "px";
 			this.playSooubleBeepSound();
-		} else this._redBall.style.left = "0px";
+		} else {
+			this._redBall.style.left = "0px";
+			this.playBeepSound();
+		}
 		this._redBallBouncingFlag = !this._redBallBouncingFlag;
 	}
 	,startButtonHandler: function(e) {
-		this._soundSpriteUtility.set_src("sound_sprite.mp3");
+		this._soundSpriteUtility.set_src("sound_sprite");
+		this._startButton.style.visibility = "hidden";
 	}
 	,playSooubleBeepSound: function() {
-		this._soundSpriteUtility.play(1000,250);
+		this._soundSpriteUtility.play(1000,600);
 	}
 	,playBeepSound: function() {
-		this._soundSpriteUtility.play(3000,250);
+		this._soundSpriteUtility.play(2000,600);
 	}
 	,soundSpriteStatusHandler: function(status,soundSprite) {
-		if(status == "READY") {
-			console.log("ready to play");
-			this._redBall.style.left = js.Browser.window.innerWidth - 50 + "px";
-		}
+		if(status == "READY") this._redBall.style.left = js.Browser.window.innerWidth - 50 + "px";
 	}
 }
 var haxe = {}
@@ -376,11 +381,11 @@ util.SoundSpriteUtility = function() {
 util.SoundSpriteUtility.__name__ = true;
 util.SoundSpriteUtility.prototype = {
 	timeUpdateHandler: function(e) {
-		if(this._flag) return;
-		this._flag = true;
+		console.log("timeUpdateHandler");
+		this._sound.removeEventListener("timeupdate",$bind(this,this.timeUpdateHandler));
+		this._sound.pause();
 		this.status = "READY";
 		this.signal.dispatch(this.status,this);
-		this._sound.pause();
 	}
 	,timerHandler: function() {
 		if(!this._isPlaying) return;
@@ -413,12 +418,11 @@ util.SoundSpriteUtility.prototype = {
 	}
 	,set_src: function(value) {
 		this._src = value;
-		if(this._sound.canPlayType("audio/mp3")) this._sound.src = this._src; else console.log("Your Borwser can not play mp3s");
-		this._flag = false;
+		if(this._sound.canPlayType("audio/mp4") == "maybe") this._sound.src = this._src + ".mp3"; else this._sound.src = this._src + ".ogg";
 		this._sound.addEventListener("timeupdate",$bind(this,this.timeUpdateHandler));
-		this._sound.play();
 		this._timer = new haxe.Timer(10);
 		this._timer.run = $bind(this,this.timerHandler);
+		this._sound.play();
 		return this._src;
 	}
 	,get_src: function() {
