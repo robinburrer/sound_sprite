@@ -451,3 +451,5 @@ util.SoundSpriteUtility.READY = "READY";
 util.SoundSpriteUtility.INTERVAL = 10;
 Main.main();
 })();
+
+//@ sourceMappingURL=SoundSpriteExample.js.map
